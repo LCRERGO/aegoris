@@ -1,0 +1,5 @@
+/target
+/out
+*.pdf
+aegoris.toml
+.env
