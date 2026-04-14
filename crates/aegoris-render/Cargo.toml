@@ -1,0 +1,31 @@
+[package]
+name = "aegoris-render"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+aegoris-core.workspace = true
+thiserror.workspace = true
+
+[dependencies.typst-as-lib]
+version = "0.16"
+optional = true
+features = ["typst-kit-fonts", "typst-kit-embed-fonts"]
+
+[dependencies.typst]
+version = "0.15"
+optional = true
+
+[dependencies.typst-pdf]
+version = "0.15"
+optional = true
+
+[dependencies.typst-layout]
+version = "0.15"
+optional = true
+
+[features]
+default = []
+pdf = ["dep:typst-as-lib", "dep:typst", "dep:typst-pdf", "dep:typst-layout"]
