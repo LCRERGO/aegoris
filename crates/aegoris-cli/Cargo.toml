@@ -1,0 +1,31 @@
+[package]
+name = "aegoris-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "aegoris"
+path = "src/main.rs"
+
+[features]
+default = ["pdf"]
+pdf = ["aegoris-render/pdf"]
+
+[dependencies]
+aegoris-core.workspace = true
+aegoris-llm.workspace = true
+aegoris-render.workspace = true
+clap.workspace = true
+anyhow.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+toml = "0.8"
+zip = "2"
+
+[dev-dependencies]
+tempfile = "3"
