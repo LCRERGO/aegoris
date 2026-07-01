@@ -1,0 +1,57 @@
+{
+  "name": "Ada Lovelace",
+  "headline": "Backend Engineer",
+  "location": "London, UK",
+  "contact": {
+    "email": "ada@example.com",
+    "github": "adalovelace",
+    "linkedin": "in/adalovelace"
+  },
+  "summary": "Backend engineer with a focus on reliable distributed systems and developer tooling.",
+  "roles": [
+    {
+      "id": "r_2",
+      "title": "Senior Backend Engineer",
+      "organization": "Analytical Engines Ltd",
+      "start": "2022",
+      "current": true,
+      "bullets": [
+        "Designed an event-driven ingestion pipeline in Rust handling 40k events per second",
+        "Reduced p99 API latency by 45% by introducing async request coalescing",
+        "Led the migration from a monolith to PostgreSQL-backed microservices"
+      ],
+      "skills": ["Rust", "PostgreSQL", "Kubernetes"]
+    },
+    {
+      "id": "r_1",
+      "title": "Backend Engineer",
+      "organization": "Babbage & Co",
+      "start": "2019",
+      "end": "2022",
+      "bullets": [
+        "Built REST APIs in Go serving 2M requests per day",
+        "Introduced continuous integration and automated testing across the team",
+        "Mentored two junior engineers"
+      ],
+      "skills": ["Go", "CI"]
+    }
+  ],
+  "skills": [
+    { "name": "Rust" },
+    { "name": "PostgreSQL" },
+    { "name": "Kubernetes" },
+    { "name": "Distributed Systems" },
+    { "name": "Go" }
+  ],
+  "education": [
+    {
+      "institution": "University of London",
+      "degree": "BSc",
+      "field": "Computer Science",
+      "end": "2019"
+    }
+  ],
+  "certifications": [
+    { "name": "Certified Kubernetes Administrator", "issuer": "CNCF", "year": "2023" }
+  ]
+}
