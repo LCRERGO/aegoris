@@ -1,0 +1,14 @@
+Senior Rust Engineer
+
+We are looking for a senior backend engineer to join our platform team.
+
+Requirements:
+- 5+ years of experience building backend services
+- Strong proficiency in Rust and async programming
+- Experience with PostgreSQL and data modelling
+- Familiarity with Kubernetes and container orchestration
+- Bachelor's degree in Computer Science or equivalent
+
+Nice to have:
+- Experience with event-driven architectures
+- Go
