@@ -24,7 +24,11 @@ use crate::config::{Mode, Settings};
 
 const PROMPT_VERSION: &str = "v1";
 
-pub fn load_profile(path: &Path) -> Result<Profile> {
+pub async fn load_profile(path: &Path) -> Result<Profile> {
+    let raw = path.to_string_lossy();
+    if crate::scrape::is_url(&raw) {
+        return crate::scrape::scrape_profile(&raw).await;
+    }
     if path != Path::new("-") && is_zip(path) {
         return load_linkedin_zip(path);
     }
@@ -156,7 +160,7 @@ pub async fn run_generate(
     profile_path: &Path,
     jd_path: &Path,
 ) -> Result<Vec<PathBuf>> {
-    let profile = load_profile(profile_path)?;
+    let profile = load_profile(profile_path).await?;
     let jd = load_jd(jd_path)?;
     let store = FactStore::from_profile(&profile);
     let mode = settings.effective_mode()?;
@@ -369,8 +373,8 @@ fn print_plan(plan: &CurationPlan) -> Result<()> {
     Ok(())
 }
 
-pub fn run_parse(profile_path: &Path, out: Option<&Path>) -> Result<()> {
-    let profile = load_profile(profile_path)?;
+pub async fn run_parse(profile_path: &Path, out: Option<&Path>) -> Result<()> {
+    let profile = load_profile(profile_path).await?;
     let json = serde_json::to_string_pretty(&profile)?;
     match out {
         Some(path) => {
@@ -381,8 +385,8 @@ pub fn run_parse(profile_path: &Path, out: Option<&Path>) -> Result<()> {
     Ok(())
 }
 
-pub fn run_score(profile_path: &Path, jd_path: &Path) -> Result<()> {
-    let profile = load_profile(profile_path)?;
+pub async fn run_score(profile_path: &Path, jd_path: &Path) -> Result<()> {
+    let profile = load_profile(profile_path).await?;
     let jd = load_jd(jd_path)?;
     let store = FactStore::from_profile(&profile);
     let plan = build_plan(&profile, &jd, &store, usize::MAX)?;
