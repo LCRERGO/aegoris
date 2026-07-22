@@ -10,6 +10,7 @@ use tracing_subscriber::EnvFilter;
 
 mod config;
 mod pipeline;
+mod scrape;
 
 use config::{
     api_key_from_env, load_file_config, resolve_base_url, resolve_embeddings, resolve_model,
@@ -52,7 +53,8 @@ enum Command {
 
 #[derive(Args)]
 struct GenerateArgs {
-    /// Path to the profile (JSON or plain text). Use `-` for stdin.
+    /// Profile source: JSON, plain text, a LinkedIn export `.zip`, a LinkedIn
+    /// profile URL to scrape, or `-` for stdin.
     #[arg(long)]
     profile: PathBuf,
 
@@ -123,6 +125,8 @@ struct GenerateArgs {
 
 #[derive(Args)]
 struct ParseArgs {
+    /// Profile source: JSON, plain text, a LinkedIn export `.zip`, or a
+    /// LinkedIn profile URL to scrape.
     #[arg(long)]
     profile: PathBuf,
 
@@ -177,8 +181,8 @@ async fn run(cli: Cli) -> Result<()> {
             }
             Ok(())
         }
-        Command::Parse(args) => pipeline::run_parse(&args.profile, args.out.as_deref()),
-        Command::Score(args) => pipeline::run_score(&args.profile, &args.jd),
+        Command::Parse(args) => pipeline::run_parse(&args.profile, args.out.as_deref()).await,
+        Command::Score(args) => pipeline::run_score(&args.profile, &args.jd).await,
     }
 }
 
