@@ -223,3 +223,68 @@ fn generate_produces_a_pdf() {
     let bytes = std::fs::read(&pdf).unwrap();
     assert!(bytes.starts_with(b"%PDF"));
 }
+
+#[test]
+fn scrapes_a_linkedin_profile_over_http() {
+    use std::io::{Read, Write};
+    use std::net::TcpListener;
+
+    const PAGE: &str = r#"<!DOCTYPE html><html><head>
+<meta property="og:title" content="Ada Lovelace - Backend Engineer | LinkedIn" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Person","name":"Ada Lovelace",
+ "jobTitle":"Senior Backend Engineer","description":"Pioneering programmer.",
+ "address":{"addressLocality":"London"},
+ "worksFor":{"name":"Analytical Engines Ltd"},
+ "alumniOf":{"name":"University of London"},
+ "knowsAbout":["Rust","PostgreSQL"]}
+</script></head><body></body></html>"#;
+
+    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    let address = listener.local_addr().unwrap();
+    listener.set_nonblocking(true).unwrap();
+    let server = std::thread::spawn(move || {
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(10);
+        loop {
+            match listener.accept() {
+                Ok((mut stream, _)) => {
+                    stream.set_nonblocking(false).unwrap();
+                    let mut request = [0u8; 1024];
+                    let _ = stream.read(&mut request);
+                    let response = format!(
+                        "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+                        PAGE.len(),
+                        PAGE
+                    );
+                    stream.write_all(response.as_bytes()).unwrap();
+                    stream.flush().unwrap();
+                    break;
+                }
+                Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
+                    if std::time::Instant::now() > deadline {
+                        break;
+                    }
+                    std::thread::sleep(std::time::Duration::from_millis(25));
+                }
+                Err(error) => panic!("test server accept failed: {error}"),
+            }
+        }
+    });
+
+    let output = base_command()
+        .args(["parse", "--profile"])
+        .arg(format!("http://{address}/in/ada"))
+        .output()
+        .unwrap();
+    server.join().unwrap();
+
+    assert!(
+        output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("\"name\": \"Ada Lovelace\""));
+    assert!(stdout.contains("Analytical Engines Ltd"));
+    assert!(stdout.contains("Rust"));
+}
