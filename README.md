@@ -17,8 +17,8 @@ for the vocabulary.
   with no network access and no model, which makes them fully testable.
 - **Works offline.** `--mode template` produces a complete, ATS-friendly resume
   and cover letter with no API key and no network.
-- **Real inputs.** Accepts canonical JSON, plain text, or a LinkedIn data-export
-  `.zip`.
+- **Real inputs.** Accepts canonical JSON, plain text, a LinkedIn data-export
+  `.zip`, or a public LinkedIn profile URL (best-effort scrape).
 - **Auditable.** Each run writes a curation plan recording the selected facts,
   their scores, and the model settings.
 
@@ -42,6 +42,9 @@ aegoris generate --profile profile.json --jd job.txt --mode llm --format md
 # Inspect inputs without generating:
 aegoris parse --profile profile.json
 aegoris score --profile profile.json --jd job.txt
+
+# Read a profile straight from a LinkedIn URL (best-effort scrape):
+aegoris parse --profile https://www.linkedin.com/in/<handle>
 ```
 
 ### Commands
@@ -56,7 +59,7 @@ aegoris score --profile profile.json --jd job.txt
 
 | Flag | Description |
 |---|---|
-| `--profile <path>` | Profile JSON or plain text (`-` for stdin) |
+| `--profile <path\|url>` | Profile JSON, plain text, LinkedIn export `.zip`, or profile URL (`-` for stdin) |
 | `--jd <path>` | Job description text (`-` for stdin) |
 | `--out <dir>` | Output directory (default `out`) |
 | `--format md,ats,pdf` | Output formats (default `md,ats`) |
@@ -109,6 +112,12 @@ never written to disk or logged.
 3. **LinkedIn data export** — a `.zip` from LinkedIn's "Get a copy of your
    data" (or the unpacked CSVs), parsed from `Profile.csv`, `Positions.csv`,
    `Education.csv`, `Skills.csv`, `Certifications.csv`, and `Projects.csv`.
+4. **LinkedIn profile URL** — `--profile https://www.linkedin.com/in/<handle>`.
+   Best-effort scraping of the public page's `schema.org/Person` JSON-LD and
+   OpenGraph tags (name, headline, summary, location, current company,
+   education, skills). It does not execute JavaScript, is subject to LinkedIn's
+   rate limits and login walls, and is not a reliable substitute for the data
+   export. See [ADR 0009](docs/adr/0009-linkedin-scraping.md).
 
 ## How it works
 
