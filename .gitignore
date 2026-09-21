@@ -1,5 +1,6 @@
 /target
 /out
 *.pdf
+!fixtures/*.pdf
 aegoris.toml
 .env

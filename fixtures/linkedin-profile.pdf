@@ -1,0 +1,138 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R 5 0 R] /Count 2 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 7 0 R /F2 8 0 R >> >> /Contents 4 0 R >>
+endobj
+4 0 obj
+<< /Length 1728 >>
+stream
+BT
+/F2 13 Tf
+1 0 0 1 21.6 752 Tm
+(Contact) Tj
+/F1 10.5 Tf
+1 0 0 1 21.6 729 Tm
+(jane.doe@example.com) Tj
+/F1 11 Tf
+1 0 0 1 21.6 706 Tm
+(www.linkedin.com/in/janedoe) Tj
+1 0 0 1 21.6 678 Tm
+(github.com/janedoe \(Portfolio\)) Tj
+/F2 13 Tf
+1 0 0 1 21.6 645 Tm
+(Top Skills) Tj
+/F1 10.5 Tf
+1 0 0 1 21.6 623 Tm
+(Systems programming) Tj
+1 0 0 1 21.6 605 Tm
+(Software development) Tj
+/F2 13 Tf
+1 0 0 1 21.6 556 Tm
+(Languages) Tj
+/F1 10.5 Tf
+1 0 0 1 21.6 534 Tm
+(Spanish \(Full Professional\)) Tj
+/F2 13 Tf
+1 0 0 1 21.6 413 Tm
+(Certifications) Tj
+/F1 10.5 Tf
+1 0 0 1 21.6 391 Tm
+(Open-Source Intelligence \(OSINT\)) Tj
+1 0 0 1 21.6 379 Tm
+(Fundamentals) Tj
+1 0 0 1 21.6 357 Tm
+(Neural Networks and Deep Learning) Tj
+1 0 0 1 21.6 335 Tm
+(Introducao a Filosofia: dos pre-) Tj
+1 0 0 1 21.6 323 Tm
+(socraticos a Sartre) Tj
+1 0 0 1 21.6 301 Tm
+(Fundamentals of Database) Tj
+1 0 0 1 21.6 289 Tm
+(Engineering) Tj
+1 0 0 1 21.6 267 Tm
+(Learn Linux Kernel Programming) Tj
+/F2 26 Tf
+1 0 0 1 223.6 727 Tm
+(Jane Doe) Tj
+/F1 12 Tf
+1 0 0 1 223.6 706 Tm
+(Backend Engineer || Golang | Rust |) Tj
+1 0 0 1 223.6 691 Tm
+(Linux Power User ||) Tj
+1 0 0 1 223.6 676 Tm
+(Sao Paulo, Sao Paulo, Brasil) Tj
+/F2 15.8 Tf
+1 0 0 1 223.6 638 Tm
+(Summary) Tj
+/F1 12 Tf
+1 0 0 1 223.6 613 Tm
+(Backend developer with four years of experience.) Tj
+/F2 15.8 Tf
+1 0 0 1 223.6 433 Tm
+(Experience) Tj
+/F1 12 Tf
+1 0 0 1 223.6 403 Tm
+(Acme Corp) Tj
+/F1 10.5 Tf
+1 0 0 1 223.6 386 Tm
+(2 years 6 months) Tj
+/F1 11.5 Tf
+1 0 0 1 223.6 365 Tm
+(Senior Software Engineer II) Tj
+/F1 10.5 Tf
+1 0 0 1 223.6 350 Tm
+(June 2024 - Present \(2 years 4 months\)) Tj
+1 0 0 1 223.6 336 Tm
+(Sao Paulo, Sao Paulo, Brasil) Tj
+1 0 0 1 223.6 314 Tm
+(Led the migration of a critical service to Kafka.) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 7 0 R /F2 8 0 R >> >> /Contents 6 0 R >>
+endobj
+6 0 obj
+<< /Length 222 >>
+stream
+BT
+/F2 15.8 Tf
+1 0 0 1 223.6 317 Tm
+(Education) Tj
+/F1 12 Tf
+1 0 0 1 223.6 287 Tm
+(University of London) Tj
+/F1 10.5 Tf
+1 0 0 1 223.6 268 Tm
+(BSc in Computer Science, Computer Science · \(March 2018 - October 2022\)) Tj
+ET
+endstream
+endobj
+7 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+8 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+xref
+0 9
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000121 00000 n 
+0000000257 00000 n 
+0000002037 00000 n 
+0000002173 00000 n 
+0000002446 00000 n 
+0000002516 00000 n 
+trailer
+<< /Size 9 /Root 1 0 R >>
+startxref
+2591
+%%EOF

@@ -199,6 +199,27 @@ fn linkedin_export_zip_is_parsed() {
     assert!(stdout.contains("Rust"));
 }
 
+#[test]
+fn linkedin_pdf_is_parsed() {
+    let output = base_command()
+        .args(["parse", "--profile"])
+        .arg(fixture("linkedin-profile.pdf"))
+        .output()
+        .unwrap();
+    assert!(
+        output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("\"name\": \"Jane Doe\""));
+    assert!(stdout.contains("\"organization\": \"Acme Corp\""));
+    assert!(stdout.contains("Senior Software Engineer II"));
+    assert!(stdout.contains("\"institution\": \"University of London\""));
+    assert!(stdout.contains("Open-Source Intelligence (OSINT) Fundamentals"));
+    assert!(stdout.contains("\"start\": \"June 2024\""));
+}
+
 #[cfg(feature = "pdf")]
 #[test]
 fn generate_produces_a_pdf() {
