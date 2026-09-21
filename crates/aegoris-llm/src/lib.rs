@@ -10,6 +10,7 @@ pub mod fake;
 pub mod openai_compat;
 pub mod phrase;
 pub mod provider;
+pub mod structure;
 pub mod verify;
 
 pub use embed::{AsyncEmbedder, OpenAiCompatEmbedder};
@@ -18,4 +19,5 @@ pub use fake::FakeLanguageModel;
 pub use openai_compat::{deepseek, OpenAiCompatModel, DEFAULT_BASE_URL, DEFAULT_MODEL};
 pub use phrase::LlmPhraser;
 pub use provider::{Completion, CompletionRequest, LanguageModel};
+pub use structure::LlmProfileStructurer;
 pub use verify::LlmClaimVerifier;

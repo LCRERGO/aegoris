@@ -8,6 +8,7 @@ use crate::provider::{Completion, CompletionRequest, LanguageModel};
 ///
 /// One adapter covers OpenAI, OpenRouter, Ollama, LM Studio, and DeepSeek
 /// (the default: `base_url = https://api.deepseek.com`, `model = deepseek-flash`).
+#[derive(Clone)]
 pub struct OpenAiCompatModel {
     base_url: String,
     api_key: String,
