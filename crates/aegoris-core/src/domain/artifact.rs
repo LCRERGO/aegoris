@@ -23,6 +23,7 @@ impl ArtifactKind {
 pub enum OutputFormat {
     Markdown,
     Ats,
+    Latex,
     Pdf,
 }
 
@@ -31,6 +32,7 @@ impl OutputFormat {
         match self {
             OutputFormat::Markdown => "md",
             OutputFormat::Ats => "txt",
+            OutputFormat::Latex => "tex",
             OutputFormat::Pdf => "pdf",
         }
     }
@@ -39,6 +41,7 @@ impl OutputFormat {
         match value.trim().to_lowercase().as_str() {
             "md" | "markdown" => Some(OutputFormat::Markdown),
             "txt" | "text" | "ats" => Some(OutputFormat::Ats),
+            "tex" | "latex" => Some(OutputFormat::Latex),
             "pdf" => Some(OutputFormat::Pdf),
             _ => None,
         }
