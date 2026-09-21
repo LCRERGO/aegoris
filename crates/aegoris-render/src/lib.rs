@@ -1,10 +1,12 @@
 //! Renderers: turn grounded claims plus a curation plan into artifacts.
 //!
 //! Markdown is the canonical representation; the ATS renderer emits plain text
-//! for applicant-tracking systems. PDF is feature-gated behind `pdf`.
+//! for applicant-tracking systems, and LaTeX emits compilable `.tex` source.
+//! PDF is feature-gated behind `pdf`.
 
 mod ats;
 mod error;
+mod latex;
 mod markdown;
 
 #[cfg(feature = "pdf")]
@@ -41,6 +43,10 @@ pub fn render(
         OutputFormat::Ats => match kind {
             ArtifactKind::Resume => ats::resume(context).into_bytes(),
             ArtifactKind::CoverLetter => ats::cover_letter(context).into_bytes(),
+        },
+        OutputFormat::Latex => match kind {
+            ArtifactKind::Resume => latex::resume(context).into_bytes(),
+            ArtifactKind::CoverLetter => latex::cover_letter(context).into_bytes(),
         },
         OutputFormat::Pdf => {
             #[cfg(feature = "pdf")]
@@ -172,6 +178,80 @@ mod tests {
         let text = artifact.as_text().unwrap();
         assert!(!text.contains("##"));
         assert!(text.contains("EXPERIENCE"));
+    }
+
+    #[test]
+    fn latex_resume_is_a_compilable_document() {
+        let (profile, jd, store) = fixture();
+        let plan = curate(
+            &profile,
+            &jd,
+            &store,
+            &LexicalScorer::new(),
+            &CurationConfig::default(),
+        )
+        .unwrap();
+        let claims = TemplatePhraser::new()
+            .phrase(&PhraseContext {
+                kind: ArtifactKind::Resume,
+                profile: &profile,
+                jd: &jd,
+                plan: &plan,
+                store: &store,
+            })
+            .unwrap();
+        let context = RenderContext {
+            profile: &profile,
+            jd: &jd,
+            plan: &plan,
+            claims: &claims,
+            store: &store,
+        };
+        let artifact = render(&context, ArtifactKind::Resume, OutputFormat::Latex).unwrap();
+        let text = artifact.as_text().unwrap();
+        assert!(text.starts_with("\\documentclass{article}"));
+        assert!(text.contains("\\section*{Summary}"));
+        assert!(text.contains("\\section*{Experience}"));
+        assert!(text.contains("\\section*{Skills}"));
+        assert!(text.contains("\\section*{Education}"));
+        assert!(text.contains("Wrote the first algorithm"));
+        assert!(text.contains("\\href{mailto:ada@example.com}{ada@example.com}"));
+        assert!(text.trim_end().ends_with("\\end{document}"));
+    }
+
+    #[test]
+    fn latex_cover_letter_is_a_compilable_document() {
+        let (profile, jd, store) = fixture();
+        let plan = curate(
+            &profile,
+            &jd,
+            &store,
+            &LexicalScorer::new(),
+            &CurationConfig::default(),
+        )
+        .unwrap();
+        let claims = TemplatePhraser::new()
+            .phrase(&PhraseContext {
+                kind: ArtifactKind::CoverLetter,
+                profile: &profile,
+                jd: &jd,
+                plan: &plan,
+                store: &store,
+            })
+            .unwrap();
+        let context = RenderContext {
+            profile: &profile,
+            jd: &jd,
+            plan: &plan,
+            claims: &claims,
+            store: &store,
+        };
+        let artifact = render(&context, ArtifactKind::CoverLetter, OutputFormat::Latex).unwrap();
+        let text = artifact.as_text().unwrap();
+        assert!(text.starts_with("\\documentclass{article}"));
+        assert!(text.contains("Dear Hiring Manager,"));
+        assert!(text.contains("Sincerely,"));
+        assert!(text.trim_end().ends_with("\\end{document}"));
     }
 
     #[cfg(not(feature = "pdf"))]
