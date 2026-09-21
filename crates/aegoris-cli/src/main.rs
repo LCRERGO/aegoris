@@ -9,6 +9,7 @@ use clap::{Args, Parser, Subcommand, ValueEnum};
 use tracing_subscriber::EnvFilter;
 
 mod config;
+mod pdf;
 mod pipeline;
 mod scrape;
 
@@ -53,8 +54,8 @@ enum Command {
 
 #[derive(Args)]
 struct GenerateArgs {
-    /// Profile source: JSON, plain text, a LinkedIn export `.zip`, a LinkedIn
-    /// profile URL to scrape, or `-` for stdin.
+    /// Profile source: JSON, plain text, a LinkedIn export `.zip`, a PDF, a
+    /// LinkedIn profile URL to scrape, or `-` for stdin.
     #[arg(long)]
     profile: PathBuf,
 
@@ -125,22 +126,32 @@ struct GenerateArgs {
 
 #[derive(Args)]
 struct ParseArgs {
-    /// Profile source: JSON, plain text, a LinkedIn export `.zip`, or a
+    /// Profile source: JSON, plain text, a LinkedIn export `.zip`, a PDF, or a
     /// LinkedIn profile URL to scrape.
     #[arg(long)]
     profile: PathBuf,
 
     #[arg(long)]
     out: Option<PathBuf>,
+
+    /// Allow the LLM to structure a PDF the deterministic parser cannot read.
+    #[arg(long)]
+    llm: bool,
 }
 
 #[derive(Args)]
 struct ScoreArgs {
+    /// Profile source: JSON, plain text, a LinkedIn export `.zip`, a PDF, or a
+    /// LinkedIn profile URL to scrape.
     #[arg(long)]
     profile: PathBuf,
 
     #[arg(long)]
     jd: PathBuf,
+
+    /// Allow the LLM to structure a PDF the deterministic parser cannot read.
+    #[arg(long)]
+    llm: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
@@ -181,8 +192,10 @@ async fn run(cli: Cli) -> Result<()> {
             }
             Ok(())
         }
-        Command::Parse(args) => pipeline::run_parse(&args.profile, args.out.as_deref()).await,
-        Command::Score(args) => pipeline::run_score(&args.profile, &args.jd).await,
+        Command::Parse(args) => {
+            pipeline::run_parse(&args.profile, args.out.as_deref(), args.llm).await
+        }
+        Command::Score(args) => pipeline::run_score(&args.profile, &args.jd, args.llm).await,
     }
 }
 

@@ -11,20 +11,33 @@ use aegoris_core::grounding::{
     apply_policy, ClaimVerifier, GroundingPolicy, StructuralVerifier, Verification,
 };
 use aegoris_core::matching::{CachedEmbedder, HybridScorer, LexicalScorer, RelevanceScorer};
-use aegoris_core::parse::{parse_job_description, parse_linkedin_export, parse_profile};
+use aegoris_core::parse::{
+    parse_job_description, parse_linkedin_export, parse_linkedin_pdf, parse_profile,
+};
 use aegoris_core::phrase::{PhraseContext, Phraser, TemplatePhraser};
 use aegoris_llm::{
-    AsyncEmbedder, LlmClaimVerifier, LlmPhraser, OpenAiCompatEmbedder, OpenAiCompatModel,
+    AsyncEmbedder, LlmClaimVerifier, LlmPhraser, LlmProfileStructurer, OpenAiCompatEmbedder,
+    OpenAiCompatModel,
 };
 use aegoris_render::{render, RenderContext};
 use anyhow::{bail, Context, Result};
 use serde::Serialize;
 
-use crate::config::{Mode, Settings};
+use crate::config::{
+    api_key_from_env, load_file_config, resolve_base_url, resolve_model, Mode, Settings,
+};
 
 const PROMPT_VERSION: &str = "v1";
 
-pub async fn load_profile(path: &Path) -> Result<Profile> {
+/// How a PDF profile is interpreted when the deterministic parser cannot read it.
+pub enum PdfFallback {
+    /// Only the deterministic LinkedIn parser runs; failure is an error.
+    Deterministic,
+    /// The LLM is invoked to structure the extracted text. Opt-in only.
+    Llm(Box<OpenAiCompatModel>),
+}
+
+pub async fn load_profile(path: &Path, fallback: &PdfFallback) -> Result<Profile> {
     let raw = path.to_string_lossy();
     if crate::scrape::is_url(&raw) {
         return crate::scrape::scrape_profile(&raw).await;
@@ -32,8 +45,45 @@ pub async fn load_profile(path: &Path) -> Result<Profile> {
     if path != Path::new("-") && is_zip(path) {
         return load_linkedin_zip(path);
     }
-    let contents = read_input(path)?;
+
+    let bytes = read_input_bytes(path)?;
+    if is_pdf(&bytes) {
+        return load_pdf_profile(&bytes, path, fallback).await;
+    }
+
+    let contents = String::from_utf8(bytes)
+        .with_context(|| format!("{} is not valid UTF-8 text", path.display()))?;
     parse_profile(&contents).with_context(|| format!("parsing profile {}", path.display()))
+}
+
+fn is_pdf(bytes: &[u8]) -> bool {
+    bytes.starts_with(b"%PDF")
+}
+
+/// Normalize a PDF profile, preferring the deterministic parser.
+///
+/// The deterministic path is always attempted first. When it fails and the LLM
+/// was explicitly opted into, the extracted text is handed to the model; there
+/// is no automatic LLM invocation.
+async fn load_pdf_profile(bytes: &[u8], path: &Path, fallback: &PdfFallback) -> Result<Profile> {
+    let layout = crate::pdf::extract_layout(bytes)
+        .with_context(|| format!("extracting text from {}", path.display()))?;
+
+    match parse_linkedin_pdf(&layout) {
+        Ok(profile) => Ok(profile),
+        Err(error) => match fallback {
+            PdfFallback::Llm(model) => {
+                let structurer = LlmProfileStructurer::new((**model).clone());
+                structurer
+                    .structure(&layout.to_text())
+                    .await
+                    .with_context(|| format!("structuring {} with the LLM", path.display()))
+            }
+            PdfFallback::Deterministic => {
+                Err(error).with_context(|| format!("parsing PDF profile {}", path.display()))
+            }
+        },
+    }
 }
 
 fn is_zip(path: &Path) -> bool {
@@ -86,15 +136,43 @@ pub fn load_jd(path: &Path) -> Result<JobDescription> {
 }
 
 pub fn read_input(path: &Path) -> Result<String> {
+    let bytes = read_input_bytes(path)?;
+    String::from_utf8(bytes).with_context(|| format!("{} is not valid UTF-8 text", path.display()))
+}
+
+pub fn read_input_bytes(path: &Path) -> Result<Vec<u8>> {
     if path == Path::new("-") {
         use std::io::Read;
-        let mut buffer = String::new();
+        let mut buffer = Vec::new();
         std::io::stdin()
-            .read_to_string(&mut buffer)
+            .read_to_end(&mut buffer)
             .context("reading stdin")?;
         return Ok(buffer);
     }
-    std::fs::read_to_string(path).with_context(|| format!("reading {}", path.display()))
+    std::fs::read(path).with_context(|| format!("reading {}", path.display()))
+}
+
+/// Build the PDF fallback for `generate`, where settings are already resolved.
+fn pdf_fallback(settings: &Settings, llm: bool) -> Result<PdfFallback> {
+    if !llm {
+        return Ok(PdfFallback::Deterministic);
+    }
+    Ok(PdfFallback::Llm(Box::new(build_model(settings, None)?)))
+}
+
+/// Build the PDF fallback for `parse` and `score`, which have no full settings.
+fn pdf_fallback_from_config(llm: bool) -> Result<PdfFallback> {
+    if !llm {
+        return Ok(PdfFallback::Deterministic);
+    }
+    let file = load_file_config()?;
+    let base_url = resolve_base_url(None, file.as_ref());
+    let model = resolve_model(None, file.as_ref());
+    let api_key = api_key_from_env()
+        .context("--llm requires an API key (set AEGORIS_API_KEY or DEEPSEEK_API_KEY)")?;
+    Ok(PdfFallback::Llm(Box::new(
+        OpenAiCompatModel::new(base_url, api_key, model).with_json_mode(true),
+    )))
 }
 
 pub fn build_plan(
@@ -160,10 +238,11 @@ pub async fn run_generate(
     profile_path: &Path,
     jd_path: &Path,
 ) -> Result<Vec<PathBuf>> {
-    let profile = load_profile(profile_path).await?;
+    let mode = settings.effective_mode()?;
+    let fallback = pdf_fallback(settings, mode == Mode::Llm)?;
+    let profile = load_profile(profile_path, &fallback).await?;
     let jd = load_jd(jd_path)?;
     let store = FactStore::from_profile(&profile);
-    let mode = settings.effective_mode()?;
 
     let scorer = build_scorer(settings, &jd, &store).await?;
     let config = CurationConfig {
@@ -373,8 +452,9 @@ fn print_plan(plan: &CurationPlan) -> Result<()> {
     Ok(())
 }
 
-pub async fn run_parse(profile_path: &Path, out: Option<&Path>) -> Result<()> {
-    let profile = load_profile(profile_path).await?;
+pub async fn run_parse(profile_path: &Path, out: Option<&Path>, llm: bool) -> Result<()> {
+    let fallback = pdf_fallback_from_config(llm)?;
+    let profile = load_profile(profile_path, &fallback).await?;
     let json = serde_json::to_string_pretty(&profile)?;
     match out {
         Some(path) => {
@@ -385,8 +465,9 @@ pub async fn run_parse(profile_path: &Path, out: Option<&Path>) -> Result<()> {
     Ok(())
 }
 
-pub async fn run_score(profile_path: &Path, jd_path: &Path) -> Result<()> {
-    let profile = load_profile(profile_path).await?;
+pub async fn run_score(profile_path: &Path, jd_path: &Path, llm: bool) -> Result<()> {
+    let fallback = pdf_fallback_from_config(llm)?;
+    let profile = load_profile(profile_path, &fallback).await?;
     let jd = load_jd(jd_path)?;
     let store = FactStore::from_profile(&profile);
     let plan = build_plan(&profile, &jd, &store, usize::MAX)?;
