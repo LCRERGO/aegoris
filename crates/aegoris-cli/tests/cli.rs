@@ -246,6 +246,36 @@ fn generate_produces_a_pdf() {
 }
 
 #[test]
+fn generate_writes_latex_source() {
+    let dir = tempfile::tempdir().unwrap();
+    let output = base_command()
+        .args(["generate", "--profile"])
+        .arg(fixture("ada-profile.json"))
+        .arg("--jd")
+        .arg(fixture("backend-jd.txt"))
+        .args(["--out"])
+        .arg(dir.path())
+        .args(["--no-llm", "--format", "tex"])
+        .output()
+        .unwrap();
+    assert!(
+        output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    let resume = dir.path().join("ada-lovelace-resume.tex");
+    let letter = dir.path().join("ada-lovelace-cover-letter.tex");
+    assert!(resume.is_file());
+    assert!(letter.is_file());
+
+    let text = std::fs::read_to_string(&resume).unwrap();
+    assert!(text.starts_with("\\documentclass{article}"));
+    assert!(text.contains("\\section*{Experience}"));
+    assert!(text.trim_end().ends_with("\\end{document}"));
+}
+
+#[test]
 fn scrapes_a_linkedin_profile_over_http() {
     use std::io::{Read, Write};
     use std::net::TcpListener;
