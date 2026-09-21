@@ -66,7 +66,7 @@ aegoris parse --profile profile.pdf
 | `--profile <path\|url>` | Profile JSON, plain text, LinkedIn export `.zip`, PDF, or profile URL (`-` for stdin) |
 | `--jd <path>` | Job description text (`-` for stdin) |
 | `--out <dir>` | Output directory (default `out`) |
-| `--format md,ats,pdf` | Output formats (default `md,ats`) |
+| `--format md,ats,pdf` | Output formats: `md`, `ats`, `tex`/`latex`, `pdf` (default `md,ats`) |
 | `--mode auto\|llm\|template` | Generation mode (default `auto`) |
 | `--no-llm` | Shorthand for `--mode template` |
 | `--provider <name>` | `deepseek` or `openai-compatible` |
@@ -139,7 +139,7 @@ Profile + JD
    ├─ curate ─────────────► Curation Plan (selected + ordered Facts)
    ├─ phrase ─────────────► Claims (template or LLM)
    ├─ ground ─────────────► structural + semantic verification
-   └─ render ─────────────► Resume / Cover Letter (md, ats, pdf*)
+   └─ render ─────────────► Resume / Cover Letter (md, ats, tex, pdf*)
 ```
 
 \* PDF rendering is compiled behind the `pdf` feature (on by default in the
@@ -150,7 +150,7 @@ CLI); see [ADR 0005](docs/adr/0005-typst-for-pdf-rendering.md).
 ```
 crates/aegoris-core/    domain, parse, matching, curate, grounding, phrase  (no I/O)
 crates/aegoris-llm/     LanguageModel trait, OpenAI-compatible adapter, fakes
-crates/aegoris-render/  Markdown, ATS, and Typst PDF renderers (`pdf` feature)
+crates/aegoris-render/  Markdown, ATS, LaTeX, and Typst PDF renderers (`pdf` feature)
 crates/aegoris-cli/     clap CLI, config, pipeline orchestration
 prompts/v1/             versioned system prompts
 docs/adr/               architecture decisions

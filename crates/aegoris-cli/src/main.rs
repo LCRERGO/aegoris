@@ -67,7 +67,7 @@ struct GenerateArgs {
     #[arg(long, default_value = "out")]
     out: PathBuf,
 
-    /// Output formats: md, ats, pdf (comma-separated).
+    /// Output formats: md, ats, tex, pdf (comma-separated).
     #[arg(long, value_delimiter = ',', default_value = "md,ats")]
     format: Vec<String>,
 
