@@ -7,7 +7,7 @@ aegoris turns a **Profile** and a **Job Description** into a curated **Resume** 
 ### Source material
 
 **Profile**:
-The candidate's source data, normalized from JSON or plain text. A Profile is raw material, never the finished document.
+The candidate's source data, normalized from JSON, plain text, a LinkedIn export, or a PDF. A Profile is raw material, never the finished document.
 _Avoid_: CV, resume, account
 
 **Job Description (JD)**:

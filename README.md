@@ -18,7 +18,8 @@ for the vocabulary.
 - **Works offline.** `--mode template` produces a complete, ATS-friendly resume
   and cover letter with no API key and no network.
 - **Real inputs.** Accepts canonical JSON, plain text, a LinkedIn data-export
-  `.zip`, or a public LinkedIn profile URL (best-effort scrape).
+  `.zip`, a LinkedIn "Save to PDF" resume, or a public LinkedIn profile URL
+  (best-effort scrape).
 - **Auditable.** Each run writes a curation plan recording the selected facts,
   their scores, and the model settings.
 
@@ -45,6 +46,9 @@ aegoris score --profile profile.json --jd job.txt
 
 # Read a profile straight from a LinkedIn URL (best-effort scrape):
 aegoris parse --profile https://www.linkedin.com/in/<handle>
+
+# Parse a LinkedIn "Save to PDF" resume:
+aegoris parse --profile profile.pdf
 ```
 
 ### Commands
@@ -59,7 +63,7 @@ aegoris parse --profile https://www.linkedin.com/in/<handle>
 
 | Flag | Description |
 |---|---|
-| `--profile <path\|url>` | Profile JSON, plain text, LinkedIn export `.zip`, or profile URL (`-` for stdin) |
+| `--profile <path\|url>` | Profile JSON, plain text, LinkedIn export `.zip`, PDF, or profile URL (`-` for stdin) |
 | `--jd <path>` | Job description text (`-` for stdin) |
 | `--out <dir>` | Output directory (default `out`) |
 | `--format md,ats,pdf` | Output formats (default `md,ats`) |
@@ -118,6 +122,12 @@ never written to disk or logged.
    education, skills). It does not execute JavaScript, is subject to LinkedIn's
    rate limits and login walls, and is not a reliable substitute for the data
    export. See [ADR 0009](docs/adr/0009-linkedin-scraping.md).
+5. **PDF** — a LinkedIn "Save to PDF" resume (`--profile profile.pdf`). The CLI
+   extracts positioned text and a deterministic parser reads the two-column,
+   localized (en + pt-BR) layout. Encrypted and image-only PDFs are rejected;
+   OCR is not supported. For other PDFs, `parse` and `score` accept `--llm` to
+   hand the extracted text to the model, and `generate --mode llm` does the
+   same. See [ADR 0010](docs/adr/0010-pdf-profile-input.md).
 
 ## How it works
 
